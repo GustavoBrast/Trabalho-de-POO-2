@@ -250,22 +250,22 @@ public class Main {
     }
 
     private static void consultarMinhasTarefas() {
-        System.out.println("\n----- Minhas Tarefas e Notas -----");
-        ArrayList<Tarefa> minhasTarefas = Tarefa.obtemTarefasDaPessoa(usuarioLogado, (ArrayList<Tarefa>) listaDeTarefas);
+    System.out.println("\n----- Minhas Tarefas e Notas -----");
+    ArrayList<Tarefa> minhasTarefas = Tarefa.obtemTarefasDaPessoa(usuarioLogado, (ArrayList<Tarefa>) listaDeTarefas);
 
-        if (minhasTarefas.isEmpty()) {
-            System.out.println("Você não possui tarefas registradas.");
-            return;
-        }
-
-        for (Tarefa tarefa : minhasTarefas) {
-            System.out.println("ID da Tarefa: " + tarefa.getID() +
-                " | Atividade: " + tarefa.getAtividade().getNome() +
-                " | Turma: " + tarefa.getTurma().getNome() +
-                " | Nota: " + tarefa.getNota() + " / " + tarefa.getAtividade().getValor());
-            System.out.println("---");
-        }
+    if (minhasTarefas.isEmpty()) {
+        System.out.println("Você não possui tarefas registradas.");
+        return;
     }
+
+    minhasTarefas.forEach(tarefa -> {
+        System.out.println("ID da Tarefa: " + tarefa.getID() +
+            " | Atividade: " + tarefa.getAtividade().getNome() +
+            " | Turma: " + tarefa.getTurma().getNome() +
+            " | Nota: " + tarefa.getNota() + " / " + tarefa.getAtividade().getValor());
+        System.out.println("---");
+    });
+}
     
     // ===================================================================
     // ===================================================================
@@ -626,21 +626,17 @@ public class Main {
     
 
     private static Turma buscarTurmaPorId(int id) {
-        for (Turma turma : listaDeTurmas) {
-            if (turma.getID() == id) {
-                return turma;
-            }
-        }
-        return null;
+        return listaDeTurmas.stream()
+                .filter(t -> t.getID() == id)
+                .findFirst() 
+                .orElse(null); 
     }
 
     private static Pessoa buscarPessoaPorCpf(String cpf) {
-        for (Pessoa pessoa : listaDePessoas) {
-            if (pessoa.getCPF().equals(cpf)) {
-                return pessoa;
-            }
-        }
-        return null;
+        return listaDePessoas.stream()
+                .filter(p -> p.getCPF().equals(cpf))
+                .findFirst()
+                .orElse(null);
     }
     
 
@@ -711,4 +707,5 @@ public static void imprimirInformacoes(Pessoa p) {
         }
     }
 }
+
 
