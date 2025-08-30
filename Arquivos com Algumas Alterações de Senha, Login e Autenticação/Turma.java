@@ -3,6 +3,8 @@ package org.teiacoltec.poo.tp2;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Turma implements Serializable {
 
@@ -117,7 +119,7 @@ public class Turma implements Serializable {
     public void setAtividades(ArrayList<Atividade> atividades) {
         this.atividades = atividades;
     }
-
+    
     public ArrayList<Pessoa> obtemListaParticipantes() {
         return participantes;
     }
@@ -130,149 +132,122 @@ public class Turma implements Serializable {
     }
 
     public void removerParticipante(Pessoa pessoa) throws PessoaNaoEncontradaException {
-    Pessoa paraRemover = null;
-
-    for (Pessoa pess : participantes) {
-        if (pess.getCPF().equals(pessoa.getCPF())) {
-            paraRemover = pess;
-            break;
+           
+        boolean removido = participantes.removeIf(p -> p.getCPF().equals(pessoa.getCPF()));
+        if (!removido) {
+            throw new PessoaNaoEncontradaException();
         }
-    }
-
-    if (paraRemover != null) {
-        participantes.remove(paraRemover);
-    } else {
-        throw new PessoaNaoEncontradaException();
-    }
     }
 
 
     public boolean participa(Pessoa pessoa) {
-        for (Pessoa pess : participantes) {
-            if (pess.getCPF().equals(pessoa.getCPF())) {
-                return true;
-            }
-        }
-        return false;
+        
+        return participantes.stream()
+                .anyMatch(p -> p.getCPF().equals(pessoa.getCPF()));
     }
 
     public void associaSubturma(Turma subturma) {
         turmas_filhas.add(subturma);
         subturma.setTurmaPai(this);
     }
+    
 
     public ArrayList<Professor> obtemListaProfessores(boolean completa) {
-        ArrayList<Professor> lista = new ArrayList<>();
-        for (Pessoa pessoa : participantes) {
-            if (pessoa instanceof Professor && !contido(lista, (Professor) pessoa)) {
-                lista.add((Professor)pessoa);
-            }
-        }
-        if (completa) {
-            for (Turma filha : turmas_filhas) {
-                for (Professor professor : filha.obtemListaProfessores(true)) {
-                    if (!contido(lista, professor)) {
-                        lista.add(professor);
-                    }
-                }
-            }
-        }
-        return lista;
-    }
+        Stream<Professor> professoresAtuais = participantes.stream()
+                .filter(p -> p instanceof Professor)
+                .map(p -> (Professor) p);
 
-    public ArrayList<Aluno> obtemListaAlunos(boolean completa) {
-        ArrayList<Aluno> lista = new ArrayList<>();
-        for (Pessoa pessoa : participantes) {
-            if (pessoa instanceof Aluno && !contido(lista, (Aluno) pessoa)) {
-                lista.add((Aluno) pessoa);
-            }
-        }
         if (completa) {
-            for (Turma filha : turmas_filhas) {
-                for (Aluno aluno : filha.obtemListaAlunos(true)) {
-                    if (!contido(lista, aluno)) {
-                        lista.add(aluno);
-                    }
-                }
-            }
+            Stream<Professor> professoresFilhas = turmas_filhas.stream()
+                    .flatMap(filha -> filha.obtemListaProfessores(true).stream());
+            
+            return Stream.concat(professoresAtuais, professoresFilhas)
+                    .distinct()
+                    .collect(Collectors.toCollection(ArrayList::new));
         }
-        return lista;
-    }
 
-    public ArrayList<Monitor> obtemListaMonitores(boolean completa) {
-        ArrayList<Monitor> lista = new ArrayList<>();
-        for (Pessoa pessoa : participantes) {
-            if (pessoa instanceof Monitor && !contido(lista, (Monitor) pessoa)) {
-                lista.add((Monitor) pessoa);
-            }
-        }
+        return professoresAtuais.collect(Collectors.toCollection(ArrayList::new));
+    }
+    
+
+     public ArrayList<Aluno> obtemListaAlunos(boolean completa) {
+        Stream<Aluno> alunosAtuais = participantes.stream()
+                .filter(p -> p instanceof Aluno)
+                .map(p -> (Aluno) p);
+
         if (completa) {
-            for (Turma filha : turmas_filhas) {
-                for (Monitor monitor : filha.obtemListaMonitores(true)) {
-                    if (!contido(lista, monitor)) {
-                        lista.add(monitor);
-                    }
-                }
-            }
+            Stream<Aluno> alunosFilhas = turmas_filhas.stream()
+                    .flatMap(filha -> filha.obtemListaAlunos(true).stream());
+            
+            return Stream.concat(alunosAtuais, alunosFilhas)
+                    .distinct()
+                    .collect(Collectors.toCollection(ArrayList::new));
         }
-        return lista;
-    }
 
-    public void associaAtividade(Atividade atividade) throws AtividadeJaAssociadaATurmaException {
-        if (atividades.contains(atividade)) { 
-            throw new AtividadeJaAssociadaATurmaException();
+        return alunosAtuais.collect(Collectors.toCollection(ArrayList::new));
+    }
+    
+
+     public ArrayList<Monitor> obtemListaMonitores(boolean completa) {
+        Stream<Monitor> monitoresAtuais = participantes.stream()
+                .filter(p -> p instanceof Monitor)
+                .map(p -> (Monitor) p);
+        
+        if (completa) {
+            Stream<Monitor> monitoresFilhas = turmas_filhas.stream()
+                .flatMap(filha -> filha.obtemListaMonitores(true).stream());
+
+            return Stream.concat(monitoresAtuais, monitoresFilhas)
+                .distinct()
+                .collect(Collectors.toCollection(ArrayList::new));
         }
+        
+        return monitoresAtuais.collect(Collectors.toCollection(ArrayList::new));
+    }
+    
+
+     public void associaAtividade(Atividade atividade) {
         atividades.add(atividade);
     }
 
-    public void desassociaAtividade(Atividade atividade) throws AtividadeNaoAssociadaATurmaException {
-        if (!atividades.remove(atividade)) {
-            throw new AtividadeNaoAssociadaATurmaException();
-        }
+    public void desassociaAtividade(Atividade atividade) {
+        atividades.remove(atividade);
     }
-
-    public ArrayList<Atividade> obtemAtividadesDaTurma(boolean completa) {
-    ArrayList<Atividade> lista = new ArrayList<>();
     
-    for (Atividade atividade : atividades) {
-        lista.add(atividade);
-    }
-
-    if (completa) {
-        for (Turma filha : turmas_filhas) {
-            ArrayList<Atividade> listaFilha = filha.obtemAtividadesDaTurma(true);
-            for (Atividade a : listaFilha) {
-                lista.add(a);
-            }
-        }
-    }
-
-    return lista;
-    }
-
 
     public ArrayList<Atividade> obtemAtividadesDaTurma(boolean completa, LocalDate inicio, LocalDate fim) {
-    ArrayList<Atividade> lista = new ArrayList<>();
-
-    for (Atividade atividade : atividades) {
-        LocalDate dataInicio = atividade.getInicio();
-
-        if ((dataInicio.isEqual(inicio) || dataInicio.isAfter(inicio)) && (dataInicio.isEqual(fim) || dataInicio.isBefore(fim))) {
-            lista.add(atividade);
+        Stream<Atividade> atividadesAtuaisFiltradas = atividades.stream()
+            .filter(atividade -> {
+                LocalDate dataInicio = atividade.getInicio();
+                return (dataInicio.isEqual(inicio) || dataInicio.isAfter(inicio)) &&
+                       (dataInicio.isEqual(fim) || dataInicio.isBefore(fim));
+            });
+    
+        if (completa) {
+            Stream<Atividade> atividadesFilhas = turmas_filhas.stream()
+                .flatMap(filha -> filha.obtemAtividadesDaTurma(true, inicio, fim).stream());
+            
+            return Stream.concat(atividadesAtuaisFiltradas, atividadesFilhas)
+                .collect(Collectors.toCollection(ArrayList::new));
         }
+    
+        return atividadesAtuaisFiltradas.collect(Collectors.toCollection(ArrayList::new));
     }
 
-    if (completa) {
-        for (Turma filha : turmas_filhas) {
-            ArrayList<Atividade> atividadesFilhas = filha.obtemAtividadesDaTurma(true, inicio, fim);
-            for (Atividade aluno : atividadesFilhas) {
-                lista.add(aluno);
-            }
+
+    public ArrayList<Atividade> obtemAtividadesDaTurma(boolean completa) {
+        Stream<Atividade> atividadesAtuais = atividades.stream();
+    
+        if (completa) {
+            Stream<Atividade> atividadesFilhas = turmas_filhas.stream()
+                    .flatMap(filha -> filha.obtemAtividadesDaTurma(true).stream());
+            
+            return Stream.concat(atividadesAtuais, atividadesFilhas)
+                    .collect(Collectors.toCollection(ArrayList::new));
         }
+        return atividadesAtuais.collect(Collectors.toCollection(ArrayList::new));
     }
 
-    return lista;
-    }
 
     public ArrayList<Atividade> obtemAtividadesDaTurmaCompleta(boolean completa) {
         return obtemAtividadesDaTurma(completa);
@@ -281,34 +256,31 @@ public class Turma implements Serializable {
     public ArrayList<Atividade> obtemAtividadesDaTurmaCompleta(boolean completa, LocalDate inicio, LocalDate fim) {
         return obtemAtividadesDaTurma(completa, inicio, fim);
     }
+    
 
-    public Turma obtemTurmaPorID(int id) {
-        if(this.ID == id){
-        return this;
+   public Turma obtemTurmaPorID(int id) {
+        if (this.ID == id) {
+            return this;
         }
-        for (Turma filha : turmas_filhas) {
-            Turma encontrada = filha.obtemTurmaPorID(id);
-            if (encontrada != null) return encontrada;
-        }
-        return null;
+        return turmas_filhas.stream()
+            .map(filha -> filha.obtemTurmaPorID(id))
+            .filter(encontrada -> encontrada != null)
+            .findFirst()
+            .orElse(null);
     }
-
+    
+    
     public ArrayList<Turma> obtemTurmasDaPessoa(Pessoa pessoa) {
-    ArrayList<Turma> turmas = new ArrayList<>();
-
-    if (participa(pessoa)) {
-        turmas.add(this);
-    }
-
-    for (Turma filha : turmas_filhas) {
-        ArrayList<Turma> turmasDaFilha = filha.obtemTurmasDaPessoa(pessoa);
-        for (Turma turma : turmasDaFilha) {
-            turmas.add(turma);
+            Stream<Turma> turmasAtuais = participa(pessoa) ? Stream.of(this) : Stream.empty();
+            
+            Stream<Turma> turmasFilhas = turmas_filhas.stream()
+                    .flatMap(filha -> filha.obtemTurmasDaPessoa(pessoa).stream());
+    
+            return Stream.concat(turmasAtuais, turmasFilhas)
+                    .collect(Collectors.toCollection(ArrayList::new));
         }
     }
 
-    return turmas;
-    }
 
     private <generica extends Pessoa> boolean contido(ArrayList<generica> lista, Pessoa pessoa) {
     for (Pessoa existente : lista) {
