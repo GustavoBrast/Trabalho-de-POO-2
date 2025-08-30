@@ -9,23 +9,30 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList; 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner; 
+import java.util.Scanner;
 
 public class Main {
 
+    // --- Listas de Dados do Sistema ---
     private static List<Turma> listaDeTurmas = new ArrayList<>();
     private static List<Pessoa> listaDePessoas = new ArrayList<>();
     private static List<Atividade> listaDeAtividades = new ArrayList<>();
     private static List<Tarefa> listaDeTarefas = new ArrayList<>();
+    
+    // --- Contadores de ID ---
     private static int proximoIdPessoa = 1;
     private static int proximoIdTarefa = 1;
     private static int proximoIdAtividade = 1;
     private static int proximoIdTurma = 1;
-    private static DateTimeFormatter formatadorDeData = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-     private static final String DADOS_FILE = "dados_sistema.ser";
+    // --- Utilitários ---
+    private static DateTimeFormatter formatadorDeData = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final String DADOS_FILE = "dados_sistema.ser";
+    private static Pessoa usuarioLogado = null;
+
+
 
     public static void main(String[] args) {
         carregarDados();
@@ -118,20 +125,152 @@ public class Main {
             GeraDadosIniciais();
         }
     }
+    
 
+    // ===================================================================
+    // ==                     MENUS DE USUÁRIO                          ==
+    // ===================================================================
 
-    private static void exibirMenuPrincipal() {
+        private static void exibirMenuLogin(Scanner scanner) {
         System.out.println("\n===== BEM-VINDO AO SISTEMA DA ESCOLA =====");
-        System.out.println("1. Criar e associar uma nova tarefa para uma turma");
-        System.out.println("2. Adicionar uma pessoa a uma turma");
-        System.out.println("3. Ver quem está em uma turma");
-        System.out.println("4. Registrar nota em uma tarefa");
-        System.out.println("5. Consultar tarefas e notas de um aluno");
-        System.out.println("6. Gerenciar atividades da turma");
+        System.out.println("Por favor, faça o login para continuar.");
         System.out.println("0. Sair do Sistema");
-        System.out.print("Digite sua opção: ");
+        System.out.print("Login: ");
+        String login = scanner.nextLine();
+
+        if (login.equals("0")) {
+            System.out.println("Obrigado! Volte sempre!");
+            salvarDados();
+            System.exit(0); 
+        }
+
+        System.out.print("Senha: ");
+        String senha = scanner.nextLine();
+
+        try {
+            usuarioLogado = Autenticacao.autenticar(login, senha, listaDePessoas);
+            System.out.println("\nLogin bem-sucedido! Bem-vindo(a), " + usuarioLogado.getNome() + ".");
+        } catch (CredenciaisInvalidasException e) {
+            System.out.println("\nErro: Login ou senha inválidos. Tente novamente.");
+            usuarioLogado = null;
+        }
+    }
+    
+        private static void exibirMenuProfessor(Scanner scanner) {
+            System.out.println("\n===== MENU DO PROFESSOR =====");
+            System.out.println("1. Gerenciar Atividades da Turma");
+            System.out.println("2. Adicionar Pessoa a uma Turma");
+            System.out.println("3. Ver Participantes de uma Turma");
+            System.out.println("4. Lançar/Alterar Nota de uma Tarefa");
+            System.out.println("5. Criar Tarefas para uma Turma (baseado em nova atividade)");
+            System.out.println("0. Logout");
+            System.out.print("Digite sua opção: ");
+            
+            try {
+                int opcao = Integer.parseInt(scanner.nextLine());
+                switch (opcao) {
+                    case 1: gerenciarAtividadesDaTurma(scanner); break;
+                    case 2: adicionarPessoaNaTurma(scanner); break;
+                    case 3: listarParticipantesDaTurma(scanner); break;
+                    case 4: registrarNotaEmTarefa(scanner); break;
+                    case 5: criarTarefaParaTurma(scanner); break;
+                    case 0:
+                        System.out.println(usuarioLogado.getNome() + " deslogado com sucesso.");
+                        usuarioLogado = null;
+                        break;
+                    default: System.out.println("Opção inválida.");
+                }
+            } catch (Exception e) {
+                System.out.println("Ops! Algo deu errado: " + e.getMessage());
+            }
+        }
+    
+        private static void exibirMenuAluno(Scanner scanner) {
+            System.out.println("\n===== MENU DO ALUNO =====");
+            System.out.println("1. Visualizar Minhas Turmas");
+            System.out.println("2. Visualizar Minhas Tarefas e Notas");
+            System.out.println("0. Logout");
+            System.out.print("Digite sua opção: ");
+    
+            try {
+                int opcao = Integer.parseInt(scanner.nextLine());
+                switch (opcao) {
+                    case 1: consultarMinhasTurmas(); break;
+                    case 2: consultarMinhasTarefas(); break;
+                    case 0:
+                        System.out.println(usuarioLogado.getNome() + " deslogado com sucesso.");
+                        usuarioLogado = null;
+                        break;
+                    default: System.out.println("Opção inválida.");
+                }
+            } catch (Exception e) {
+                System.out.println("Ops! Algo deu errado: " + e.getMessage());
+            }
+        }
+    
+        private static void exibirMenuMonitor(Scanner scanner) {
+            System.out.println("\n===== MENU DO MONITOR =====");
+            System.out.println("1. Visualizar Participantes da Turma que monitoro");
+            System.out.println("2. Lançar Nota em Tarefa");
+            System.out.println("0. Logout");
+            System.out.print("Digite sua opção: ");
+    
+            try {
+                int opcao = Integer.parseInt(scanner.nextLine());
+                switch (opcao) {
+                    case 1: listarParticipantesDaTurma(scanner); break;
+                    case 2: registrarNotaEmTarefa(scanner); break; 
+                    case 0:
+                        System.out.println(usuarioLogado.getNome() + " deslogado com sucesso.");
+                        usuarioLogado = null;
+                        break;
+                    default: System.out.println("Opção inválida.");
+                }
+            } catch (Exception e) {
+                System.out.println("Ops! Algo deu errado: " + e.getMessage());
+            }
+        }
+    // ===================================================================
+    // ===================================================================
+
+
+
+    // ===================================================================
+    // ==                METODOS ESPECIALIZADOS PARA ALUNO              ==
+    // ===================================================================
+    
+    private static void consultarMinhasTurmas() {
+        System.out.println("\n----- Minhas Turmas -----");
+        listaDeTurmas.stream()
+            .filter(turma -> turma.participa(usuarioLogado))
+            .forEach(turma -> {
+                System.out.println("ID: " + turma.getID() + " | Nome: " + turma.getNome() + " | Descrição: " + turma.getDescricao());
+            });
+        System.out.println("-------------------------");
     }
 
+    private static void consultarMinhasTarefas() {
+        System.out.println("\n----- Minhas Tarefas e Notas -----");
+        ArrayList<Tarefa> minhasTarefas = Tarefa.obtemTarefasDaPessoa(usuarioLogado, (ArrayList<Tarefa>) listaDeTarefas);
+
+        if (minhasTarefas.isEmpty()) {
+            System.out.println("Você não possui tarefas registradas.");
+            return;
+        }
+
+        for (Tarefa tarefa : minhasTarefas) {
+            System.out.println("ID da Tarefa: " + tarefa.getID() +
+                " | Atividade: " + tarefa.getAtividade().getNome() +
+                " | Turma: " + tarefa.getTurma().getNome() +
+                " | Nota: " + tarefa.getNota() + " / " + tarefa.getAtividade().getValor());
+            System.out.println("---");
+        }
+    }
+    
+    // ===================================================================
+    // ===================================================================
+    
+    
     private static void gerenciarAtividadesDaTurma(Scanner scanner) throws AtividadeJaAssociadaATurmaException, AtividadeNaoAssociadaATurmaException { // Adicionado throws
         System.out.println("\n--- Gerenciar Atividades da Turma ---");
         System.out.print("Qual o ID da turma? ");
@@ -227,7 +366,8 @@ public class Main {
     }
 
 
-////////////
+    // ===================================================================
+    // ===================================================================
 
 
     private static void listarAtividadesDaTurma(Turma turma, Scanner scanner) {
@@ -262,9 +402,9 @@ public class Main {
     }
 
 
-
-////////////
-
+    // ===================================================================
+    // ===================================================================
+    
     
     private static void associarAtividadeExistente(Turma turma, Scanner scanner) throws AtividadeJaAssociadaATurmaException {
         System.out.println("\n--- Associar Atividade Existente ---");
@@ -291,10 +431,12 @@ public class Main {
         turma.associaAtividade(atividadeParaAssociar);
         System.out.println("Atividade " + atividadeParaAssociar.getNome() + " associada à turma " + turma.getNome() + " com sucesso!");
     }
+    
 
+    // ===================================================================
+    // ===================================================================
 
-////////////
-
+    
 
     private static void registrarNotaEmTarefa(Scanner scanner) {
         System.out.println("\n--- Registrar Nota em Tarefa ---");
@@ -344,11 +486,13 @@ public class Main {
         tarefaSelecionada.setNota(novaNota);
         System.out.println("Nota " + novaNota + " registrada com sucesso para a tarefa ID " + tarefaSelecionada.getID() + ".");
     }
+    
+
+    // ===================================================================
+    // ===================================================================
 
 
-////////////
-
-
+    
     private static void consultarTarefasDoAluno(Scanner scanner) {
         System.out.println("\n--- Receita: Consultar Tarefas de um Aluno ---");
         System.out.print("Qual o CPF do aluno? ");
@@ -377,9 +521,10 @@ public class Main {
     }
 
 
+    // ===================================================================
+    // ===================================================================
 
-////////////
-
+    
 
     private static void adicionarPessoaNaTurma(Scanner scanner) {
          System.out.println("\n--- Matricular Pessoa na Turma ---");
@@ -407,8 +552,10 @@ public class Main {
          }
     }
 
-
-////////////
+    
+    // ===================================================================
+    // ===================================================================
+    
 
     private static void listarParticipantesDaTurma(Scanner scanner) {
         System.out.println("\n--- Ver a lista de participantes da Turma ---");
@@ -441,7 +588,10 @@ public class Main {
         }
     }
     
-////////////
+    
+    // ===================================================================
+    // ===================================================================
+    
 
       private static void desassociarAtividade(Turma turma, Scanner scanner) throws AtividadeNaoAssociadaATurmaException {
         System.out.println("\n--- Desassociar Atividade ---");
@@ -469,7 +619,11 @@ public class Main {
         System.out.println("Atividade " + atividadeParaDesassociar.getNome() + " desassociada da turma " + turma.getNome() + " com sucesso!");
     }
 
-////////////// MÉTODOS ADICIONAIS
+    
+    // ===================================================================
+    // ====                    MÉTODOS ADICIONAIS                     ====
+    // ===================================================================
+    
 
     private static Turma buscarTurmaPorId(int id) {
         for (Turma turma : listaDeTurmas) {
@@ -488,12 +642,14 @@ public class Main {
         }
         return null;
     }
+    
 
-////////////// MÉTODOS IMPRIMIR INFORMAÇÕES
+ // ===================================================================
+ // ====              MÉTODOS IMPRIMIR INFORMAÇÕES                 ====
+ // ===================================================================
 
 
-
-public static void imprimirInformacoes(Pessoa pessoa) {
+    public static void imprimirInformacoes(Pessoa pessoa) {
         
         System.out.println("CPF: " + pessoa.getCPF()); 
         System.out.println("nome: " + pessoa.getNome());
@@ -534,48 +690,48 @@ public static void imprimirInformacoes(Pessoa pessoa) {
     }
 
 
+ // ===================================================================
+ // ====              Dados Iniciais                               ====
+ // ===================================================================
 
-////////////// DADOS INICIAIS
+//Apenas cria um conjunto mínimo de dados para que o programa não comece vazio
 
-
-     //Apenas cria um conjunto mínimo de dados para que o programa não comece vazio
-
-   private static void GeraDadosIniciais() {
-
-        // --- Pessoas ---
-        Aluno aluno1 = new Aluno("111", "João Silva", LocalDate.parse("10/05/2007", formatadorDeData), "joao@email.com", "Rua A, 10","","", "A01", "DS");
+    private static void GeraDadosIniciais() {
+    
+        Aluno aluno1 = new Aluno("111", "João Silva", LocalDate.parse("10/05/2007", formatadorDeData), "joao@email.com", "Rua A, 10", "joao", "aluno123", "A01", "DS");
         listaDePessoas.add(aluno1);
-        Professor prof1 = new Professor("333", "Carlos Souza", LocalDate.parse("20/08/1985", formatadorDeData), "carlos@email.com", "Rua C, 30","","", "P01", "POO");
+        
+        Professor prof1 = new Professor("333", "Carlos Souza", LocalDate.parse("20/08/1985", formatadorDeData), "carlos@email.com", "Rua C, 30", "carlos", "profe123", "P01", "POO");
         listaDePessoas.add(prof1);
-
+    
         // --- Turmas ---
-        Turma turma1 = new Turma(proximoIdTurma++, "203-A", "Desenvolvimento de Sistemas", LocalDate.now(), LocalDate.now().plusMonths(6), null, null, null, null);
-        listaDeTurmas.add(turma1);
-
-        try {
-            turma1.adicionarParticipante(aluno1);
-            turma1.adicionarParticipante(prof1);
-        } catch (PessoaJaParticipanteException e) {
-            System.out.println("Erro ao adicionar participantes iniciais: " + e.getMessage());
-        }
-
-
-        // --- Atividades ---
-        Atividade ativ1 = new Atividade(proximoIdAtividade++, "Prova POO", "Avaliação final", LocalDate.parse("01/07/2025", formatadorDeData), LocalDate.parse("01/07/2025", formatadorDeData), 100);
-        listaDeAtividades.add(ativ1);
-
-        // --- Associa atividades às turmas e cria tarefas iniciais.
-        try {
-            turma1.associaAtividade(ativ1);
-
-            // Cria tarefa para o Aluno1 na Turma1 com Atividade1
-            if (turma1.obtemListaAlunos(false).contains(aluno1)) {
-                Tarefa t1 = new Tarefa(proximoIdTarefa++, aluno1, turma1, ativ1, 4);
-                listaDeTarefas.add(t1);
+        if (listaDeTurmas.isEmpty()) {
+            Turma turma1 = new Turma(proximoIdTurma++, "203-A", "Desenvolvimento de Sistemas", LocalDate.now(), LocalDate.now().plusMonths(6), null, null, null, null);
+            listaDeTurmas.add(turma1);
+    
+            try {
+                turma1.adicionarParticipante(aluno1);
+                turma1.adicionarParticipante(prof1);
+            } catch (PessoaJaParticipanteException e) {
+                System.out.println("Erro ao adicionar participantes iniciais: " + e.getMessage());
             }
-        } catch (AtividadeJaAssociadaATurmaException e) {
-            System.out.println("Erro ao associar atividades iniciais: " + e.getMessage());
+    
+            // --- Atividades ---
+            Atividade ativ1 = new Atividade(proximoIdAtividade++, "Prova POO", "Avaliação final", LocalDate.parse("01/07/2025", formatadorDeData), LocalDate.parse("01/07/2025", formatadorDeData), 100);
+            listaDeAtividades.add(ativ1);
+    
+            // --- Associa atividades e cria tarefas ---
+            try {
+                turma1.associaAtividade(ativ1);
+    
+                // Cria tarefa para o Aluno1
+                if (turma1.obtemListaAlunos(false).contains(aluno1)) {
+                    Tarefa t1 = new Tarefa(proximoIdTarefa++, aluno1, turma1, ativ1, 0); // Nota inicial 0
+                    listaDeTarefas.add(t1);
+                }
+            } catch (AtividadeJaAssociadaATurmaException e) {
+                System.out.println("Erro ao associar atividades iniciais: " + e.getMessage());
+            }
         }
     }
-
 }
