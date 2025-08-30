@@ -62,40 +62,34 @@ public class Tarefa implements Serializable {
     public void setNota(float nota) {
         this.nota = nota;
     }
+    
 
     public static Tarefa obtemTarefaPorID(int id, ArrayList<Tarefa> tarefas) {
-    for (Tarefa tarefa : tarefas) {
-        if (tarefa.getID() == id) {
-            return tarefa;
-        }
-    }
-    return null;
+        return tarefas.stream()                  
+                .filter(tarefa -> tarefa.getID() == id) 
+                .findFirst()                        
+                .orElse(null);                      
     }
 
-    public static ArrayList<Tarefa> obtemTarefasDaPessoa(Pessoa pessoa, ArrayList<Tarefa> todasAsTarefas) {
-        ArrayList<Tarefa> tarefasDaPessoa = new ArrayList<>();
-        for (Tarefa tarefa : todasAsTarefas) {
-            if (tarefa.getAluno().getCPF().equals(pessoa.getCPF())) {
-                tarefasDaPessoa.add(tarefa);
-            }
-        }
-        return tarefasDaPessoa;
+    
+    public static Tarefa[] obtemTarefasDaPessoa(Pessoa pessoa, List<Tarefa> todasAsTarefas) {
+        List<Tarefa> tarefasDaPessoa = todasAsTarefas.stream()
+                .filter(tarefa -> tarefa.getAluno().getCPF().equals(pessoa.getCPF()))
+                .collect(Collectors.toList());
+        
+        return tarefasDaPessoa.toArray(new Tarefa[0]);
     }
 
+    
     public static ArrayList<Tarefa> obtemTarefasDaPessoa(Pessoa pessoa, LocalDate inicio, LocalDate fim, ArrayList<Tarefa> todasAsTarefas) {
-    ArrayList<Tarefa> tarefasDaPessoa = new ArrayList<>();
 
-    for (Tarefa tarefa : todasAsTarefas) {
-        if (tarefa.getAluno().getCPF().equals(pessoa.getCPF())) {
-            LocalDate dataAtividade = tarefa.getAtividade().getInicio();
-
-            if ((dataAtividade.isEqual(inicio) || dataAtividade.isAfter(inicio)) &&
-                (dataAtividade.isEqual(fim) || dataAtividade.isBefore(fim))) {
-                tarefasDaPessoa.add(tarefa);
-            }
-        }
-    }
-
-    return tarefasDaPessoa;
+        return todasAsTarefas.stream()
+            .filter(tarefa -> tarefa.getAluno().getCPF().equals(pessoa.getCPF()))
+            .filter(tarefa -> {
+                LocalDate dataAtividade = tarefa.getAtividade().getInicio();
+                return (dataAtividade.isEqual(inicio) || dataAtividade.isAfter(inicio)) &&
+                       (dataAtividade.isEqual(fim) || dataAtividade.isBefore(fim));
+            })
+            .collect(Collectors.toCollection(ArrayList::new)); 
     }
 }
