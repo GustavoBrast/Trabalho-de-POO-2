@@ -649,44 +649,20 @@ public class Main {
  // ===================================================================
 
 
-    public static void imprimirInformacoes(Pessoa pessoa) {
-        
-        System.out.println("CPF: " + pessoa.getCPF()); 
-        System.out.println("nome: " + pessoa.getNome());
-        System.out.println("nascimento: " + pessoa.getNascimento());
-        System.out.println("email: " + pessoa.getEmail());
-        System.out.println("endereço: " + pessoa.getEndereco());
-        
+public static void imprimirInformacoes(Pessoa p) {
+        System.out.println("Nome: " + p.getNome() + " | CPF: " + p.getCPF() + " | Email: " + p.getEmail());
     }
 
-    public static void imprimirInformacoes(Turma turma) {
-        
-        System.out.println("ID: " + turma.getID()); 
-        System.out.println("nome: " + turma.getNome());
-        System.out.println("descrição: " + turma.getDescricao());
-        System.out.println("início: " + turma.getInicio());
-        System.out.println("fim: " + turma.getFim());
-        
+    public static void imprimirInformacoes(Turma t) {
+        System.out.println("ID: " + t.getID() + " | Nome: " + t.getNome() + " | Descrição: " + t.getDescricao());
     }
 
-    public static void imprimirInformacoes(Atividade atividade) {
-        
-        System.out.println("ID: " + atividade.getID()); 
-        System.out.println("nome: " + atividade.getNome());
-        System.out.println("descrição: " + atividade.getDescricao());
-        System.out.println("início: " + atividade.getInicio());
-        System.out.println("fim: " + atividade.getFim());
-        
+    public static void imprimirInformacoes(Atividade a) {
+        System.out.println("ID: " + a.getID() + " | Nome: " + a.getNome() + " | Valor: " + a.getValor());
     }
 
-    public static void imprimirInformacoes(Tarefa tarefa) {
-        
-        System.out.println("ID: " + tarefa.getID()); 
-        System.out.println("nota: " + tarefa.getNota());
-        System.out.println("Matricula do aluno: " + tarefa.getAluno().getMatricula());
-        System.out.println("turma: " + tarefa.getTurma().getNome());
-        System.out.println("ID da atividade: " + tarefa.getAtividade().getID());
-        
+    public static void imprimirInformacoes(Tarefa t) {
+        System.out.println("ID Tarefa: " + t.getID() + " | Atividade: " + t.getAtividade().getNome() + " | Nota: " + t.getNota() + "/" + t.getAtividade().getValor());
     }
 
 
@@ -735,3 +711,4 @@ public class Main {
         }
     }
 }
+
