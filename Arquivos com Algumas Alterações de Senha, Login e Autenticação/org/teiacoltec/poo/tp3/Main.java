@@ -127,6 +127,7 @@ public class Main {
         } catch (CredenciaisInvalidasException e) {
             System.out.println("\nErro: Login ou senha inválidos. Tente novamente.");
             usuarioLogado = null;
+            
         }
     }
     
@@ -143,19 +144,21 @@ public class Main {
             try {
                 int opcao = Integer.parseInt(scanner.nextLine());
                 switch (opcao) {
-                    case 1: gerenciarAtividadesDaTurma(scanner); break;
-                    case 2: adicionarPessoaNaTurma(scanner); break;
-                    case 3: listarParticipantesDaTurma(scanner); break;
-                    case 4: registrarNotaEmTarefa(scanner); break;
-                    case 5: criarTarefaParaTurma(scanner); break;
+                    case 1: gerenciarAtividadesDaTurma(scanner); exibirMenuProfessor( scanner);
+                    case 2: adicionarPessoaNaTurma(scanner);exibirMenuProfessor( scanner);
+                    case 3: listarParticipantesDaTurma(scanner);exibirMenuProfessor( scanner);
+                    case 4: registrarNotaEmTarefa(scanner);exibirMenuProfessor( scanner);
+                    case 5: criarTarefaParaTurma(scanner);exibirMenuProfessor( scanner);
                     case 0:
                         System.out.println(usuarioLogado.getNome() + " deslogado com sucesso.");
                         usuarioLogado = null;
+                        exibirMenuLogin(scanner);
                         break;
                     default: System.out.println("Opção inválida.");
                 }
             } catch (Exception e) {
                 System.out.println("Ops! Algo deu errado: " + e.getMessage());
+                exibirMenuLogin(scanner);
             }
         }
     
@@ -169,16 +172,18 @@ public class Main {
             try {
                 int opcao = Integer.parseInt(scanner.nextLine());
                 switch (opcao) {
-                    case 1: consultarMinhasTurmas(); break;
-                    case 2: consultarMinhasTarefas(); break;
+                    case 1: consultarMinhasTurmas(); exibirMenuAluno(scanner);
+                    case 2: consultarMinhasTarefas(); exibirMenuAluno(scanner);
                     case 0:
                         System.out.println(usuarioLogado.getNome() + " deslogado com sucesso.");
                         usuarioLogado = null;
+                        exibirMenuLogin(scanner);
                         break;
                     default: System.out.println("Opção inválida.");
                 }
             } catch (Exception e) {
                 System.out.println("Ops! Algo deu errado: " + e.getMessage());
+                exibirMenuLogin(scanner);
             }
         }
     
@@ -192,16 +197,18 @@ public class Main {
             try {
                 int opcao = Integer.parseInt(scanner.nextLine());
                 switch (opcao) {
-                    case 1: listarParticipantesDaTurma(scanner); break;
-                    case 2: registrarNotaEmTarefa(scanner); break; 
+                    case 1: listarParticipantesDaTurma(scanner); exibirMenuMonitor(scanner);
+                    case 2: registrarNotaEmTarefa(scanner); exibirMenuMonitor(scanner);
                     case 0:
                         System.out.println(usuarioLogado.getNome() + " deslogado com sucesso.");
                         usuarioLogado = null;
+                        exibirMenuLogin(scanner);
                         break;
                     default: System.out.println("Opção inválida.");
                 }
             } catch (Exception e) {
                 System.out.println("Ops! Algo deu errado: " + e.getMessage());
+                exibirMenuLogin(scanner);
             }
         }
     // ===================================================================
@@ -246,7 +253,7 @@ public class Main {
     // ===================================================================
     
     
-    private static void gerenciarAtividadesDaTurma(Scanner scanner) throws AtividadeJaAssociadaATurmaException, AtividadeNaoAssociadaATurmaException { // Adicionado throws
+    private static void gerenciarAtividadesDaTurma(Scanner scanner) throws AcessoNaoAutorizadoException, AtividadeJaAssociadaATurmaException, AtividadeNaoAssociadaATurmaException { // Adicionado throws
         System.out.println("\n--- Gerenciar Atividades da Turma ---");
         System.out.print("Qual o ID da turma? ");
         int idTurma = Integer.parseInt(scanner.nextLine());
@@ -280,7 +287,7 @@ public class Main {
     }
 
 
-    private static void criarTarefaParaTurma(Scanner scanner) throws AtividadeJaAssociadaATurmaException, AtividadeNaoPertenceATurmaException {
+    private static void criarTarefaParaTurma(Scanner scanner) throws AcessoNaoAutorizadoException, AtividadeJaAssociadaATurmaException, AtividadeNaoPertenceATurmaException {
         System.out.println("\n--- Criar Nova Tarefa ---");
         System.out.print("ID da turma? ");
         int idTurma = Integer.parseInt(scanner.nextLine());
@@ -501,7 +508,7 @@ public class Main {
 
     
 
-    private static void adicionarPessoaNaTurma(Scanner scanner) {
+    private static void adicionarPessoaNaTurma(Scanner scanner) throws AcessoNaoAutorizadoException {
          System.out.println("\n--- Matricular Pessoa na Turma ---");
          System.out.print("Qual o CPF da pessoa? ");
          String cpf = scanner.nextLine();
@@ -532,7 +539,7 @@ public class Main {
     // ===================================================================
     
 
-    private static void listarParticipantesDaTurma(Scanner scanner) {
+    private static void listarParticipantesDaTurma(Scanner scanner) throws AcessoNaoAutorizadoException{
         System.out.println("\n--- Ver a lista de participantes da Turma ---");
         System.out.print("Qual o ID da Turma? ");
         int idTurma = Integer.parseInt(scanner.nextLine());
@@ -568,7 +575,7 @@ public class Main {
     // ===================================================================
     
 
-      private static void desassociarAtividade(Turma turma, Scanner scanner) throws AtividadeNaoAssociadaATurmaException {
+      private static void desassociarAtividade(Turma turma, Scanner scanner) throws  AcessoNaoAutorizadoException, AtividadeNaoAssociadaATurmaException {
         System.out.println("\n--- Desassociar Atividade ---");
         ArrayList<Atividade> atividadesAtuais = turma.getAtividades();
         if (atividadesAtuais.isEmpty()) {
@@ -645,12 +652,19 @@ public static void imprimirInformacoes(Pessoa p) {
 
     private static void GeraDadosIniciais() {
     
-        Aluno aluno1 = new Aluno("111", "João Silva", LocalDate.parse("10/05/2007", formatadorDeData), "joao@email.com", "Rua A, 10", "joao", "aluno123", "A01", "DS");
-        listaDePessoas.add(aluno1);
-        
-        Professor prof1 = new Professor("333", "Carlos Souza", LocalDate.parse("20/08/1985", formatadorDeData), "carlos@email.com", "Rua C, 30", "carlos", "profe123", "P01", "POO");
-        listaDePessoas.add(prof1);
+       Aluno aluno1 = new Aluno("111", "João Silva", LocalDate.parse("10/05/2007", formatadorDeData), "joao@email.com", "Rua A, 10", "joao", "aluno123", "A01", "DS");
+    listaDePessoas.add(aluno1);
     
+    // --- ADICIONE ESTE CÓDIGO ABAIXO ---
+    Aluno aluno2 = new Aluno("222", "Maria Oliveira", LocalDate.parse("15/06/2007", formatadorDeData), "maria@email.com", "Rua B, 20", "maria", "aluno456", "A02", "DS");
+    listaDePessoas.add(aluno2);
+    
+    Monitor monitor1 = new Monitor("555", "Pedro Costa", LocalDate.parse("25/09/2006", formatadorDeData), "pedro@email.com", "Rua E, 50", "pedro", "moni123", "M01", "DS");
+    listaDePessoas.add(monitor1);
+    // ------------------------------------
+    
+    Professor prof1 = new Professor("333", "Carlos Souza", LocalDate.parse("20/08/1985", formatadorDeData), "carlos@email.com", "Rua C, 30", "carlos", "profe123", "P01", "POO");
+    listaDePessoas.add(prof1);
         // --- Turmas ---
         if (listaDeTurmas.isEmpty()) {
             Turma turma1 = new Turma(proximoIdTurma++, "203-A", "Desenvolvimento de Sistemas", LocalDate.now(), LocalDate.now().plusMonths(6), null, null, null, null);
@@ -659,6 +673,7 @@ public static void imprimirInformacoes(Pessoa p) {
             try {
                 turma1.adicionarParticipante(aluno1);
                 turma1.adicionarParticipante(prof1);
+                turma1.adicionarParticipante(monitor1);
             } catch (PessoaJaParticipanteException e) {
                 System.out.println("Erro ao adicionar participantes iniciais: " + e.getMessage());
             }

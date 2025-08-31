@@ -6,7 +6,7 @@ public class Autenticacao {
     public static Pessoa autenticar (String login, String senha, List<Pessoa> usuarios) throws CredenciaisInvalidasException{
 
 
-return usuarios.stream()
+    return usuarios.stream()
                    .filter(usuario -> usuario.getLogin().equals(login) && usuario.verificarSenha(senha))
                    .findFirst()
                    .orElseThrow(() -> new CredenciaisInvalidasException());
