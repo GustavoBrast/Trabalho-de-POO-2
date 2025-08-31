@@ -38,47 +38,9 @@ public class Main {
         carregarDados();
 
         Scanner scanner = new Scanner(System.in);
-        int opcaoEscolhida = -1; 
-
-        while (opcaoEscolhida != 0) {
-            exibirMenuLogin(scanner); 
-            try {
-                opcaoEscolhida = Integer.parseInt(scanner.nextLine());
-
-                switch (opcaoEscolhida) {
-                    case 1:
-                        criarTarefaParaTurma(scanner);
-                        break;
-                    case 2:
-                        adicionarPessoaNaTurma(scanner);
-                        break;
-                    case 3:
-                        listarParticipantesDaTurma(scanner);
-                        break;
-                     case 4:
-                        registrarNotaEmTarefa(scanner);
-                        break;
-                    case 5:
-                        consultarTarefasDoAluno(scanner);
-                        break;
-                    case 6:
-                        gerenciarAtividadesDaTurma(scanner);
-                        break;
-                    case 0:
-                        System.out.println("Obrigado! Volte sempre!");
-                        break;
-                    default:
-                        System.out.println("Opção inválida. Escolha um número do menu.");
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("Erro: Por favor, digite apenas números.");
-            } catch (Exception e) {    
-                System.out.println("Algo deu errado: " + e.getMessage());
-            } finally {
-                salvarDados();
-            }
-        }
-       
+        
+        exibirMenuPrincipal(scanner);
+        
         scanner.close(); 
     }
 
@@ -130,6 +92,17 @@ public class Main {
     // ===================================================================
     // ==                     MENUS DE USUÁRIO                          ==
     // ===================================================================
+        private static void exibirMenuPrincipal(Scanner scanner) {
+        if (usuarioLogado == null) {
+            exibirMenuLogin(scanner);
+        } else if (usuarioLogado instanceof Professor) {
+            exibirMenuProfessor(scanner);
+        } else if (usuarioLogado instanceof Aluno) {
+            exibirMenuAluno(scanner);
+        } else if (usuarioLogado instanceof Monitor) {
+            exibirMenuMonitor(scanner);
+        }
+    }
 
         private static void exibirMenuLogin(Scanner scanner) {
         System.out.println("\n===== BEM-VINDO AO SISTEMA DA ESCOLA =====");
@@ -150,6 +123,7 @@ public class Main {
         try {
             usuarioLogado = Autenticacao.autenticar(login, senha, listaDePessoas);
             System.out.println("\nLogin bem-sucedido! Bem-vindo(a), " + usuarioLogado.getNome() + ".");
+            exibirMenuPrincipal(scanner);
         } catch (CredenciaisInvalidasException e) {
             System.out.println("\nErro: Login ou senha inválidos. Tente novamente.");
             usuarioLogado = null;
