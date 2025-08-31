@@ -1,4 +1,4 @@
-package org.teiacoltec.poo.tp2;
+package org.teiacoltec.poo.tp3;
 
 public class AtividadeNaoAssociadaATurmaException extends Exception {
  

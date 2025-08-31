@@ -1,16 +1,15 @@
-package org.teiacoltec.poo.tp2;
+package org.teiacoltec.poo.tp3;
 
 import java.time.LocalDate;
 
-public class Aluno extends Pessoa {
+public class Monitor extends Pessoa {
     
     private static final long serialVersionUID = 1L;
 
     private String Matricula;
     private String Curso;
     
-    Aluno(String CPF, String nome, LocalDate nascimento, String email, String endereco, String login, String senhaHash, String Matricula, String Curso){
-
+    public Monitor(String CPF, String nome, LocalDate nascimento, String email, String endereco, String login, String senhaHash, String Matricula, String Curso){
         super(CPF, nome, nascimento, email, endereco, login, senhaHash);
         this.Matricula = Matricula;
         this.Curso = Curso;
