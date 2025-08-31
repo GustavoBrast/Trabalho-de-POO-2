@@ -41,7 +41,7 @@ public class Main {
         int opcaoEscolhida = -1; 
 
         while (opcaoEscolhida != 0) {
-            exibirMenuPrincipal(); 
+            exibirMenuLogin(scanner); 
             try {
                 opcaoEscolhida = Integer.parseInt(scanner.nextLine());
 

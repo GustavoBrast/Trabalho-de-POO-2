@@ -279,7 +279,7 @@ public class Turma implements Serializable {
             return Stream.concat(turmasAtuais, turmasFilhas)
                     .collect(Collectors.toCollection(ArrayList::new));
         }
-    }
+    
 
 
     private <generica extends Pessoa> boolean contido(ArrayList<generica> lista, Pessoa pessoa) {
