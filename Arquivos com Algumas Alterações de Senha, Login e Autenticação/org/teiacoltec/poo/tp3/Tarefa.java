@@ -74,14 +74,16 @@ public class Tarefa implements Serializable {
     }
 
     
-    public static Tarefa[] obtemTarefasDaPessoa(Pessoa pessoa, List<Tarefa> todasAsTarefas) {
-        List<Tarefa> tarefasDaPessoa = todasAsTarefas.stream()
-                .filter(tarefa -> tarefa.getAluno().getCPF().equals(pessoa.getCPF()))
-                .collect(Collectors.toList());
-        
-        return tarefasDaPessoa.toArray(new Tarefa[0]);
-    }
-
+   
+    
+    // Este método agora retorna um ArrayList, compatível com o código em Main.
+    public static ArrayList<Tarefa> obtemTarefasDaPessoa(Pessoa pessoa, List<Tarefa> todasAsTarefas) {
+    ArrayList<Tarefa> tarefasDaPessoa = todasAsTarefas.stream()
+            .filter(tarefa -> tarefa.getAluno().getCPF().equals(pessoa.getCPF()))
+            .collect(Collectors.toCollection(ArrayList::new));
+    
+    return tarefasDaPessoa;
+}
     
     public static ArrayList<Tarefa> obtemTarefasDaPessoa(Pessoa pessoa, LocalDate inicio, LocalDate fim, ArrayList<Tarefa> todasAsTarefas) {
 

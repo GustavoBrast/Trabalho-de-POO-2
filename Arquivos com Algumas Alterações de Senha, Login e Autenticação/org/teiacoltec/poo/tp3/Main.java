@@ -251,8 +251,9 @@ public class Main {
 
     private static void consultarMinhasTarefas() {
     System.out.println("\n----- Minhas Tarefas e Notas -----");
-    ArrayList<Tarefa> minhasTarefas = Tarefa.obtemTarefasDaPessoa(usuarioLogado, (ArrayList<Tarefa>) listaDeTarefas);
+     ArrayList<Tarefa> minhasTarefas = Tarefa.obtemTarefasDaPessoa(usuarioLogado, listaDeTarefas);
 
+ 
     if (minhasTarefas.isEmpty()) {
         System.out.println("Você não possui tarefas registradas.");
         return;
@@ -693,7 +694,7 @@ public static void imprimirInformacoes(Pessoa p) {
             listaDeAtividades.add(ativ1);
     
             // --- Associa atividades e cria tarefas ---
-            try {
+            
                 turma1.associaAtividade(ativ1);
     
                 // Cria tarefa para o Aluno1
@@ -701,9 +702,7 @@ public static void imprimirInformacoes(Pessoa p) {
                     Tarefa t1 = new Tarefa(proximoIdTarefa++, aluno1, turma1, ativ1, 0); // Nota inicial 0
                     listaDeTarefas.add(t1);
                 }
-            } catch (AtividadeJaAssociadaATurmaException e) {
-                System.out.println("Erro ao associar atividades iniciais: " + e.getMessage());
-            }
+           
         }
     }
 }
